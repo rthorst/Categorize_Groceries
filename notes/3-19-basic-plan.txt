@@ -1,0 +1,19 @@
+1. Train a model to take the name of a product and predict the appropriate department.
+
+    lowercase unigrams, most common 50k. logistic regression.
+
+    save
+        vectorizer
+        classifier
+
+2. Create a simple function to add the department in brackets to an item.
+
+    Chocolate Sandwich Cookies -->  [Snacks] Chocolate Sandwich Cookies
+
+3. Create an Alexa skill using the Python SDK to retrieve an item from the list and add the department in brackets.
+
+4. Add the following deployment features:
+    - When done, sort the list.
+    - Should be able to call the skill and have it sort a grocery list.
+
+5. Final deployment.
