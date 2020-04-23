@@ -141,3 +141,4 @@ if __name__ == "__main__":
     for item in items:
         department = DC.get_department(item)
         print("{} -> {}".format(item, department))
+
