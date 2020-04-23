@@ -1,0 +1,61 @@
+OPTION 1:
+Alexa, tell Categorize Groceries to Categorize My List _____
+
+OPTION 2:
+Alexa, launch Categorize Groceries.
+--> Hello, which list would you like to categorize?
+
+Name
+--> Ok, done!
+
+----------------
+
+Progress.
+
+tell categorize groceries to sort the list coffee.
+OK, i will sort the list coffee
+
+TODO: actually interface with lists.
+
+
+
+
+---------
+
+permissions = ["read::alexa:device:all:address"]
+
+
+class GetAddressHandler(AbstractRequestHandler):
+    # Handler for Getting Device Address or asking for location consent
+    def can_handle(self, handler_input):
+        return is_intent_name("GetAddressIntent")(handler_input)
+
+    def handle(self, handler_input):
+        req_envelope = handler_input.request_envelope
+        response_builder = handler_input.response_builder
+        service_client_fact = handler_input.service_client_factory
+
+        if not (req_envelope.context.system.user.permissions and
+                req_envelope.context.system.user.permissions.consent_token):
+            response_builder.speak(NOTIFY_MISSING_PERMISSIONS)
+            response_builder.set_card(
+                AskForPermissionsConsentCard(permissions=permissions))
+            return response_builder.response
+
+        try:
+            device_id = req_envelope.context.system.device.device_id
+            device_addr_client = service_client_fact.get_device_address_service()
+            addr = device_addr_client.get_full_address(device_id)
+
+            if addr.address_line1 is None and addr.state_or_region is None:
+                response_builder.speak(NO_ADDRESS)
+            else:
+                response_builder.speak(ADDRESS_AVAILABLE.format(
+                    addr.address_line1, addr.state_or_region, addr.postal_code))
+            return response_builder.response
+        except ServiceException:
+            response_builder.speak(ERROR)
+            return response_builder.response
+        except Exception as e:
+            raise e
+
