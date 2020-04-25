@@ -30,7 +30,7 @@ department_to_id = pickle.load(open("../results/department_to_id.p", "rb"))
 id_to_department = { k : v for v, k in department_to_id.items() }
 
 # Provide a place to paste the shopping list.
-streamlit.markdown("## Paste the list from Alexa here:")
+streamlit.markdown("## Paste the list from Alexa here and press enter:")
 list_text_from_alexa = streamlit.text_input("")
 
 # If a shopping list is entered, parse it.
@@ -47,9 +47,38 @@ if len(list_text_from_alexa) > 1:
     ypred = clf.predict(X)
     predicted_departments = [id_to_department[yi] for yi in ypred]
 
-    # Output results as a sorted table.
-    data = np.vstack([shopping_list_items, predicted_departments]).T
-    colnames = ["Item", "Department"]
-    df = pd.DataFrame(data=data, columns=colnames)
-    df = df.sort_values(by = ["Department", "Item"])
-    streamlit.dataframe(df)
+    # Map departments to items.
+    department_to_items = { department : [] for 
+            department in predicted_departments}
+    for department, item in zip(predicted_departments, shopping_list_items):
+        department_to_items[department].append(item)
+
+    # Output results as a printable list. 
+    list_markdown = ""
+    WHITESPACE = "&nbsp;"*5
+    DIVIDER = WHITESPACE + "|" + WHITESPACE
+    for department in sorted(department_to_items.keys()):
+        
+        # Add department as title.
+        list_markdown += "#### {}\n".format(department.capitalize())
+        
+        # Add individual items in sorted order.
+        items = sorted(department_to_items[department])
+        last_item_idx = len(items) - 1
+        for idx, item in enumerate(items):
+
+            # Add item only. Then, for all items by last, 
+            # add a pipe divider.
+            list_markdown += "{}".format(item.capitalize())
+            if idx != last_item_idx:
+                list_markdown += DIVIDER
+
+        # Add linebreak after last divider, otherwise, the next
+        # header will not format properly.
+        list_markdown += "\n"
+
+    # Remove extra newline.
+    list_markdown = list_markdown.rstrip()
+
+    # Show grocery list.
+    streamlit.markdown(list_markdown)
